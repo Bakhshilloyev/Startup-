@@ -40,19 +40,19 @@ def _http(method: str, url: str, headers: dict, body: bytes = b""):
         return 0, f"{exc}"
 
 
-def resolve_provider(name: str) -> str:
+def resolve_provider(name: str, api_key: str = "") -> str:
     """Resolve the ``auto`` provider into a concrete backend."""
     if name and name != "auto":
         return name
-    key = os.environ.get("GOAT_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
+    key = api_key or os.environ.get("GOAT_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
     if key and key.startswith("sk-ant"):
         return "anthropic"
     if os.environ.get("ANTHROPIC_API_KEY"):
         return "anthropic"
-    if _ollama_reachable():
-        return "ollama"
     if key:
         return "openai"
+    if _ollama_reachable():
+        return "ollama"
     return "ollama"  # safest local default
 
 
@@ -329,6 +329,6 @@ _PROVIDERS = {
 
 
 def get_provider(cfg) -> LLMProvider:
-    name = resolve_provider(cfg.provider())
+    name = resolve_provider(cfg.provider(), cfg.api_key())
     cls = _PROVIDERS.get(name, OllamaProvider)
     return cls(cfg)

@@ -110,3 +110,29 @@ class Agent:
 
     def reset(self):
         self.messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+
+    def set_api_key(self, key: str, persist: bool = True) -> dict:
+        """Set the API key at runtime, re-resolve the provider, and persist.
+
+        Returns a small status dict so callers (REPL / Telegram) can report it.
+        """
+        self.cfg.data["goat"]["api_key"] = key
+        # With a key present, prefer a hosted provider over local Ollama.
+        if self.cfg.provider() in ("auto", "ollama"):
+            self.cfg.data["goat"]["provider"] = "auto"
+        self.provider = get_provider(self.cfg)
+        if persist:
+            from . import config as cfgmod
+
+            try:
+                saved = cfgmod.save_config(self.cfg)
+                persisted = str(saved)
+            except Exception as exc:  # pragma: no cover - defensive
+                persisted = f"(not saved: {exc})"
+        else:
+            persisted = "(not persisted)"
+        return {
+            "provider": self.provider.name,
+            "model": self.provider.model,
+            "persisted": persisted,
+        }

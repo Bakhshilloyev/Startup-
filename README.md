@@ -95,6 +95,7 @@ Environment variables (`GOAT_PROVIDER`, `GOAT_MODEL`, `GOAT_API_KEY`,
 | `/provider NAME`   | switch provider                     |
 | `/model NAME`      | set model                           |
 | `/cd PATH`         | change working directory            |
+| `/key KEY`         | set API key (saved to ~/.goat/config.toml) |
 | `/cwd`             | print working directory             |
 | `/exit`, `/quit`   | quit                                |
 

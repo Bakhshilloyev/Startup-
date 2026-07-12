@@ -181,3 +181,20 @@ def load_config(path: Path = DEFAULT_CONFIG_FILE) -> Config:
 def ensure_config_dir() -> Path:
     DEFAULT_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     return DEFAULT_CONFIG_DIR
+
+
+def save_config(cfg: Config, path: Path = DEFAULT_CONFIG_FILE) -> Path:
+    """Persist the [goat] section to a TOML file (creating it if needed)."""
+    path = Path(path)
+    ensure_config_dir()
+    lines = ["[goat]"]
+    for key, val in cfg.data.get("goat", {}).items():
+        if isinstance(val, bool):
+            lines.append(f"{key} = {str(val).lower()}")
+        elif isinstance(val, (int, float)):
+            lines.append(f"{key} = {val}")
+        else:
+            # store as a quoted string; secrets stay in the local config file
+            lines.append(f'{key} = "{val}"')
+    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return path

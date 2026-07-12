@@ -17,6 +17,7 @@ HELP_TEXT = """Goat commands (prefix with '/'):
   /model           show current provider and model
   /provider NAME   switch provider (openai|anthropic|ollama|auto)
   /model NAME      set model name
+  /key KEY         set API key (saved to ~/.goat/config.toml)
   /cd PATH         change working directory
   /cwd             show working directory
   /exit, /quit     leave Goat
@@ -70,7 +71,7 @@ def main(argv=None) -> int:
     apply_cli_overrides(cfg, args)
 
     pinfo = plat.detect()
-    provider = resolve_provider(cfg.provider())
+    provider = resolve_provider(cfg.provider(), cfg.api_key())
     ui = UI(verbose=cfg.verbose())
     agent = Agent(cfg, ui=ui)
 
@@ -103,6 +104,20 @@ def main(argv=None) -> int:
         if line == "/model":
             ui.info(f"provider={agent.provider.name} model={agent.provider.model}")
             continue
+        if line.startswith("/key "):
+            key = line[len("/key "):].strip()
+            if not key:
+                ui.info("usage: /key YOUR_API_KEY")
+            else:
+                status = agent.set_api_key(key)
+                ui.info(
+                    f"api key set -> provider={status['provider']} "
+                    f"model={status['model']} saved={status['persisted']}"
+                )
+            continue
+        if line == "/key":
+            ui.info("usage: /key YOUR_API_KEY")
+            continue
         if line == "/cwd":
             ui.info(agent.cwd)
             continue
@@ -112,7 +127,7 @@ def main(argv=None) -> int:
             from .llm import get_provider as _gp
 
             agent.provider = _gp(cfg)
-            ui.info(f"provider set to {resolve_provider(cfg.provider())}")
+            ui.info(f"provider set to {resolve_provider(cfg.provider(), cfg.api_key())}")
             continue
         if line.startswith("/model "):
             mdl = line[len("/model ") :].strip()
