@@ -26,8 +26,8 @@ quickly and runs anywhere Python does, including Android's Termux.
 ### From GitHub (any platform)
 
 ```bash
-git clone https://github.com/Bakhshilloyev/goat-agent.git
-cd goat-agent
+git clone https://github.com/Bakhshilloyev/Startup-.git
+cd Startup-
 python3 goat.py          # no install needed; core is stdlib-only
 # or install as a command:
 pip install -e .
