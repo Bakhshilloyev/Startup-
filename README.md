@@ -23,6 +23,17 @@ quickly and runs anywhere Python does, including Android's Termux.
 
 ## Installation
 
+### From GitHub (any platform)
+
+```bash
+git clone https://github.com/Bakhshilloyev/Startup-.git
+cd Startup-
+python3 goat.py          # no install needed; core is stdlib-only
+# or install as a command:
+pip install -e .
+goat
+```
+
 ### Linux / macOS / Termux
 
 ```bash
@@ -103,6 +114,32 @@ Environment variables (`GOAT_PROVIDER`, `GOAT_MODEL`, `GOAT_API_KEY`,
 
 `read_file` · `write_file` · `edit_file` · `list_files` · `glob_files` ·
 `grep_files` · `run_command`
+
+## Telegram bot
+
+Goat can also run as a Telegram bot (BotFather API), no extra dependencies:
+
+1. Message [@BotFather](https://t.me/BotFather), create a bot, copy the token.
+2. Set it (env takes precedence over config):
+
+   ```bash
+   export GOAT_TELEGRAM_TOKEN="123456:ABC..."
+   goat --telegram
+   ```
+
+   or in `~/.goat/config.toml`:
+
+   ```toml
+   telegram_token = "123456:ABC..."
+   telegram_allowed = ""   # comma-separated chat/user ids; empty = allow all
+   ```
+
+3. Open your bot in Telegram and send `/start`, then tasks. Goat streams
+   progress (🔧 tool calls) and replies in chat. Slash commands `/reset`,
+   `/model`, `/provider` work too.
+
+The bot uses long polling against `api.telegram.org` and is fully stdlib-based,
+so it also runs on Termux / weak devices.
 
 ## License
 
