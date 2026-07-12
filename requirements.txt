@@ -1,0 +1,3 @@
+# Goat core is stdlib-only (no pip install needed).
+# Optional, for a nicer terminal UI:
+rich>=13.0.0

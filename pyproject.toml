@@ -1,0 +1,26 @@
+[project]
+name = "goat-agent"
+version = "0.1.0"
+description = "Goat - a terminal AI coding agent with Hermes adaptability and Claude Code strength. Runs on Linux, Windows, macOS and Termux."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "Goat" }]
+keywords = ["ai", "agent", "cli", "coding", "terminal", "llm"]
+dependencies = [
+    # Core is stdlib-only (urllib) for maximum portability on weak devices.
+    # `rich` is optional and only improves the terminal UI.
+]
+
+[project.optional-dependencies]
+ui = ["rich>=13.0.0"]
+
+[project.scripts]
+goat = "goat.cli:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["goat*"]
