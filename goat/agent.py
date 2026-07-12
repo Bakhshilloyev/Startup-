@@ -51,8 +51,13 @@ class Agent:
     def _call_model(self, stream: bool = True) -> dict:
         return self.provider.complete(self.messages, toolmod.TOOL_SCHEMAS, stream=stream)
 
-    def send(self, user_text: str) -> str:
-        """Run one user turn and return the final assistant text."""
+    def send(self, user_text: str, on_event=None) -> str:
+        """Run one user turn and return the final assistant text.
+
+        If ``on_event`` is given it is called with dicts of the form
+        ``{"type": "text"|"tool_call"|"tool_result", ...}`` so callers (e.g. the
+        Telegram bot) can forward live progress to the user.
+        """
         self.messages.append({"role": "user", "content": user_text})
         rounds = 0
         final_text = ""
@@ -79,6 +84,8 @@ class Agent:
 
             if content:
                 self.ui.assistant(content)
+                if on_event:
+                    on_event({"type": "text", "content": content})
 
             if not tool_calls:
                 final_text = content
@@ -88,8 +95,12 @@ class Agent:
                 name = tc.get("name", "")
                 args = tc.get("arguments", "{}")
                 self.ui.tool_call(name, args)
+                if on_event:
+                    on_event({"type": "tool_call", "name": name, "arguments": args})
                 output = toolmod.dispatch(name, args, self.cwd)
                 self.ui.tool_result(output)
+                if on_event:
+                    on_event({"type": "tool_result", "name": name, "content": output})
                 self.messages.append(
                     {
                         "role": "tool",

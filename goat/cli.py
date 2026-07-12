@@ -38,6 +38,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--base-url", help="custom API base URL")
     p.add_argument("--cwd", help="working directory", default=os.getcwd())
     p.add_argument("--config", help="path to config.toml")
+    p.add_argument(
+        "--telegram",
+        action="store_true",
+        help="run as a Telegram bot (needs GOAT_TELEGRAM_TOKEN or telegram_token)",
+    )
     p.add_argument("--verbose", action="store_true", help="verbose logging")
     p.add_argument("task", nargs="*", help="optional one-shot task (non-interactive)")
     return p
@@ -73,6 +78,11 @@ def main(argv=None) -> int:
     provider = resolve_provider(cfg.provider())
     ui = UI(verbose=cfg.verbose())
     agent = Agent(cfg, ui=ui)
+
+    if args.telegram:
+        from .telegram import run_from_config
+
+        return run_from_config(cfg, agent, ui)
 
     if args.task:
         task = " ".join(args.task)

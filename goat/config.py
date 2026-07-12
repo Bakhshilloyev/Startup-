@@ -144,6 +144,8 @@ def default_config() -> dict:
             "cwd": os.getcwd(),
             "autostart": True,
             "verbose": False,
+            "telegram_token": "",
+            "telegram_allowed": "",
         }
     }
 
