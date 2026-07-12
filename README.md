@@ -23,6 +23,17 @@ quickly and runs anywhere Python does, including Android's Termux.
 
 ## Installation
 
+### From GitHub (any platform)
+
+```bash
+git clone https://github.com/Bakhshilloyev/goat-agent.git
+cd goat-agent
+python3 goat.py          # no install needed; core is stdlib-only
+# or install as a command:
+pip install -e .
+goat
+```
+
 ### Linux / macOS / Termux
 
 ```bash
