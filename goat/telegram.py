@@ -58,6 +58,9 @@ class TelegramBot:
             "/reset": self._cmd_reset,
             "/model": self._cmd_model,
             "/key": self._cmd_key,
+            "/endpoint": self._cmd_endpoint,
+            "/port": self._cmd_port,
+            "/version": self._cmd_version,
         }
 
     def _authorized(self, chat_id) -> bool:
@@ -115,6 +118,24 @@ class TelegramBot:
             else:
                 self.send(chat_id, "Send your key as: /key YOUR_API_KEY")
             return
+        if text.startswith("/endpoint "):
+            ep = text[len("/endpoint ") :].strip()
+            if ep:
+                status = self.agent.set_endpoint(ep)
+                self.send(chat_id, "endpoint set -> " + status["endpoint"] + " (" + status["provider"] + ")")
+            else:
+                self.send(chat_id, "Send as: /endpoint http://host:port")
+            return
+        if text.startswith("/port "):
+            port = text[len("/port ") :].strip()
+            status = self.agent.set_port(port)
+            self.send(chat_id, "port set -> " + status["endpoint"])
+            return
+        if text.startswith("/version "):
+            ver = text[len("/version ") :].strip()
+            status = self.agent.set_version(ver)
+            self.send(chat_id, "api version set -> " + ver)
+            return
 
         # Stream progress back to the chat as Goat works.
         def on_event(ev):
@@ -131,7 +152,7 @@ class TelegramBot:
             chat_id,
             "🐐 Goat is online. Send me a coding task and I'll use my tools "
             "(read/write/edit files, run commands, search) to help.\n"
-            "Commands: /help /reset /model /provider /key",
+            "Commands: /help /reset /model /provider /key /endpoint /port /version",
         )
 
     def _cmd_help(self, chat_id):
@@ -141,7 +162,10 @@ class TelegramBot:
             "/reset - clear conversation\n"
             "/model NAME - set model\n"
             "/provider NAME - openai|anthropic|ollama|auto\n"
-            "/key KEY - set API key",
+            "/key KEY - set API key\n"
+            "/endpoint URL - set custom endpoint (host:port)\n"
+            "/port PORT - set port on the endpoint\n"
+            "/version VER - set API version",
         )
 
     def _cmd_reset(self, chat_id):
@@ -156,6 +180,15 @@ class TelegramBot:
 
     def _cmd_key(self, chat_id):
         self.send(chat_id, "Send your key as: /key YOUR_API_KEY")
+
+    def _cmd_endpoint(self, chat_id):
+        self.send(chat_id, "Send as: /endpoint http://host:port")
+
+    def _cmd_port(self, chat_id):
+        self.send(chat_id, "Send as: /port 8080")
+
+    def _cmd_version(self, chat_id):
+        self.send(chat_id, "Send as: /version 2023-06-01")
 
     # --- main loop -------------------------------------------------------
     def run(self):

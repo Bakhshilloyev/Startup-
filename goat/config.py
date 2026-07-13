@@ -103,6 +103,9 @@ class Config:
     def base_url(self) -> str:
         return self.get("base_url", "")
 
+    def api_version(self) -> str:
+        return self.get("api_version", "")
+
     def temperature(self) -> float:
         return float(self.get("temperature", 0.2))
 
@@ -138,14 +141,13 @@ def default_config() -> dict:
             "model": model,
             "api_key": "",
             "base_url": "" if p["weak_device"] else "",
+            "api_version": "",
             "temperature": 0.2,
             "max_tokens": max_tokens,
             "max_tool_rounds": 32,
             "cwd": os.getcwd(),
             "autostart": True,
             "verbose": False,
-            "telegram_token": "",
-            "telegram_allowed": "",
         }
     }
 
@@ -168,6 +170,7 @@ def load_config(path: Path = DEFAULT_CONFIG_FILE) -> Config:
         "GOAT_MODEL": "model",
         "GOAT_API_KEY": "api_key",
         "GOAT_BASE_URL": "base_url",
+        "GOAT_API_VERSION": "api_version",
         "GOAT_TEMPERATURE": "temperature",
         "GOAT_MAX_TOKENS": "max_tokens",
         "GOAT_CWD": "cwd",
@@ -183,20 +186,3 @@ def load_config(path: Path = DEFAULT_CONFIG_FILE) -> Config:
 def ensure_config_dir() -> Path:
     DEFAULT_CONFIG_DIR.mkdir(parents=True, exist_ok=True)
     return DEFAULT_CONFIG_DIR
-
-
-def save_config(cfg: Config, path: Path = DEFAULT_CONFIG_FILE) -> Path:
-    """Persist the [goat] section to a TOML file (creating it if needed)."""
-    path = Path(path)
-    ensure_config_dir()
-    lines = ["[goat]"]
-    for key, val in cfg.data.get("goat", {}).items():
-        if isinstance(val, bool):
-            lines.append(f"{key} = {str(val).lower()}")
-        elif isinstance(val, (int, float)):
-            lines.append(f"{key} = {val}")
-        else:
-            # store as a quoted string; secrets stay in the local config file
-            lines.append(f'{key} = "{val}"')
-    path.write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return path

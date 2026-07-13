@@ -1,3 +1,4 @@
+import urllib.parse
 """The Goat agent loop.
 
 Combines two lineages:
@@ -145,5 +146,60 @@ class Agent:
         return {
             "provider": self.provider.name,
             "model": self.provider.model,
+            "persisted": persisted,
+        }
+    def set_api_key(self, key: str, persist: bool = True) -> dict:
+        """Set the API key at runtime, re-resolve the provider, and persist."""
+        self.cfg.data["goat"]["api_key"] = key
+        if self.cfg.provider() in ("auto", "ollama"):
+            self.cfg.data["goat"]["provider"] = "auto"
+        self.provider = get_provider(self.cfg)
+        return self._persist(persist)
+
+    def set_endpoint(self, url: str, persist: bool = True) -> dict:
+        """Point Goat at a custom endpoint (include host and port)."""
+        self.cfg.data["goat"]["base_url"] = url
+        if self.cfg.provider() in ("auto", "ollama"):
+            self.cfg.data["goat"]["provider"] = "auto"
+        self.provider = get_provider(self.cfg)
+        return self._persist(persist)
+
+    def set_port(self, port, persist: bool = True) -> dict:
+        """Set the port on the current endpoint host."""
+        port = str(port).strip()
+        base = self.cfg.base_url() or "http://localhost"
+        parsed = urllib.parse.urlparse(base)
+        scheme = parsed.scheme or "http"
+        host = parsed.hostname or "localhost"
+        new_base = urllib.parse.urlunparse(
+            (scheme, host + ":" + port, parsed.path, "", "", "")
+        )
+        self.cfg.data["goat"]["base_url"] = new_base
+        if self.cfg.provider() in ("auto", "ollama"):
+            self.cfg.data["goat"]["provider"] = "auto"
+        self.provider = get_provider(self.cfg)
+        return self._persist(persist)
+
+    def set_version(self, version: str, persist: bool = True) -> dict:
+        """Set the API version (e.g. Azure api-version)."""
+        self.cfg.data["goat"]["api_version"] = version
+        self.provider = get_provider(self.cfg)
+        return self._persist(persist)
+
+    def _persist(self, persist: bool) -> dict:
+        if persist:
+            from . import config as cfgmod
+
+            try:
+                saved = cfgmod.save_config(self.cfg)
+                persisted = str(saved)
+            except Exception as exc:  # pragma: no cover - defensive
+                persisted = f"(not saved: {exc})"
+        else:
+            persisted = "(not persisted)"
+        return {
+            "provider": self.provider.name,
+            "model": self.provider.model,
+            "endpoint": self.provider.base_url,
             "persisted": persisted,
         }

@@ -3,7 +3,8 @@
 provider  = "auto"      # auto | openai | anthropic | ollama
 model     = ""          # empty -> provider default
 api_key   = ""          # or use env GOAT_API_KEY / ANTHROPIC_API_KEY
-base_url  = ""          # custom OpenAI-compatible endpoint
+base_url  = ""          # custom endpoint, e.g. http://localhost:8080 (host:port)
+api_version = ""        # optional API version (e.g. Azure api-version)
 temperature = 0.2
 max_tokens  = 2048
 max_tool_rounds = 32

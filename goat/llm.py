@@ -18,6 +18,7 @@ import os
 import time
 import urllib.error
 import urllib.request
+import urllib.parse
 
 from . import platform as plat
 
@@ -40,7 +41,7 @@ def _http(method: str, url: str, headers: dict, body: bytes = b""):
         return 0, f"{exc}"
 
 
-def resolve_provider(name: str, api_key: str = "") -> str:
+def resolve_provider(name: str, api_key: str = "", base_url: str = "") -> str:
     """Resolve the ``auto`` provider into a concrete backend."""
     if name and name != "auto":
         return name
@@ -50,6 +51,8 @@ def resolve_provider(name: str, api_key: str = "") -> str:
     if os.environ.get("ANTHROPIC_API_KEY"):
         return "anthropic"
     if key:
+        return "openai"
+    if base_url:
         return "openai"
     if _ollama_reachable():
         return "ollama"
@@ -64,6 +67,22 @@ def _ollama_reachable() -> bool:
         return False
 
 
+def _normalize_base(base_url: str) -> str:
+    """Strip any trailing '/v1' so we can re-append it consistently."""
+    base = (base_url or "https://api.openai.com").rstrip("/")
+    if base.endswith("/v1"):
+        base = base[:-3].rstrip("/")
+    return base
+
+
+def _chat_url(base_url: str, api_version: str = "") -> str:
+    """Build the chat completions URL, appending ?api-version when set."""
+    url = base_url.rstrip("/") + "/v1/chat/completions"
+    if api_version:
+        url += "?api-version=" + urllib.parse.quote(api_version, safe="")
+    return url
+
+
 class LLMProvider:
     """Base class. Subclasses implement :meth:`complete`."""
 
@@ -74,6 +93,7 @@ class LLMProvider:
         self.model = cfg.model()
         self.api_key = cfg.api_key()
         self.base_url = cfg.base_url()
+        self.api_version = cfg.api_version()
         self.temperature = cfg.temperature()
         self.max_tokens = cfg.max_tokens()
 
@@ -92,7 +112,7 @@ class OpenAIProvider(LLMProvider):
 
     def __init__(self, cfg):
         super().__init__(cfg)
-        self.base_url = (self.base_url or "https://api.openai.com/v1").rstrip("/")
+        self.base_url = _normalize_base(self.base_url or "https://api.openai.com")
         if not self.model:
             self.model = os.environ.get("GOAT_MODEL") or "gpt-4o-mini"
         self.headers = {"Content-Type": "application/json"}
@@ -111,7 +131,7 @@ class OpenAIProvider(LLMProvider):
             payload["tools"] = tools
             payload["tool_choice"] = "auto"
 
-        url = f"{self.base_url}/chat/completions"
+        url = _chat_url(self.base_url, self.api_version)
         if stream:
             return self._stream(url, payload)
         return self._oneshot(url, payload)
@@ -206,7 +226,7 @@ class OllamaProvider(OpenAIProvider):
 
     def __init__(self, cfg):
         super().__init__(cfg)
-        self.base_url = (self.base_url or "http://localhost:11434/v1").rstrip("/")
+        self.base_url = _normalize_base(self.base_url or "http://localhost:11434")
         if not self.model:
             self.model = os.environ.get("GOAT_MODEL") or "qwen2.5-coder:7b"
         # Strip any bearer header; Ollama does not need it.
@@ -225,7 +245,7 @@ class AnthropicProvider(LLMProvider):
         self.headers = {
             "Content-Type": "application/json",
             "x-api-key": self.api_key,
-            "anthropic-version": "2023-06-01",
+            "anthropic-version": self.api_version or "2023-06-01",
         }
 
     def complete(self, messages, tools, stream=False):
@@ -329,6 +349,6 @@ _PROVIDERS = {
 
 
 def get_provider(cfg) -> LLMProvider:
-    name = resolve_provider(cfg.provider(), cfg.api_key())
+    name = resolve_provider(cfg.provider(), cfg.api_key(), cfg.base_url())
     cls = _PROVIDERS.get(name, OllamaProvider)
     return cls(cfg)

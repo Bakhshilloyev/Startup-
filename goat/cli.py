@@ -18,6 +18,9 @@ HELP_TEXT = """Goat commands (prefix with '/'):
   /provider NAME   switch provider (openai|anthropic|ollama|auto)
   /model NAME      set model name
   /key KEY         set API key (saved to ~/.goat/config.toml)
+  /endpoint URL    set custom endpoint (host:port)
+  /port PORT       set port on the endpoint
+  /version VER     set API version
   /cd PATH         change working directory
   /cwd             show working directory
   /exit, /quit     leave Goat
@@ -153,6 +156,30 @@ def main(argv=None) -> int:
                 ui.info(f"cwd -> {target}")
             else:
                 ui.error(f"not a directory: {target}")
+            continue
+        if line.startswith("/endpoint "):
+            ep = line[len("/endpoint "):].strip()
+            if not ep:
+                ui.info("usage: /endpoint http://host:port")
+            else:
+                status = agent.set_endpoint(ep)
+                ui.info(f"endpoint set -> {status['endpoint']} ({status['provider']}) saved={status['persisted']}")
+            continue
+        if line == "/endpoint":
+            ui.info("usage: /endpoint http://host:port")
+            continue
+        if line.startswith("/port "):
+            port = line[len("/port "):].strip()
+            status = agent.set_port(port)
+            ui.info(f"port set -> {status['endpoint']} ({status['provider']})")
+            continue
+        if line.startswith("/version "):
+            ver = line[len("/version "):].strip()
+            status = agent.set_version(ver)
+            ui.info(f"api version set -> {ver} ({status['provider']})")
+            continue
+        if line == "/version":
+            ui.info("usage: /version VERSION")
             continue
 
         agent.send(line)
