@@ -1,3 +1,5 @@
-# Goat core is stdlib-only (no pip install needed).
-# Optional, for a nicer terminal UI:
-rich>=13.0.0
+# Goat AI Agent — core is pure standard library (no pip install required).
+# These are OPTIONAL improvements; the agent runs without them.
+pyyaml>=6.0
+requests>=2.28.0   # faster web/API calls (urllib is used as fallback)
+rich>=13.0.0        # nicer terminal output

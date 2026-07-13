@@ -14,11 +14,19 @@ dist/
 venv/
 env/
 
-# Local config with secrets
-.goat/
+# Secrets
+.env
+*.db
+data/memory/*.db
+data/cache/*
+data/logs/*
 
 # Editor / OS
 .vscode/
 .idea/
 .DS_Store
 *.swp
+
+# Claude Code / local tooling
+.claude/
+.kilo/

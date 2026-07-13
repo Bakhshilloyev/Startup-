@@ -1,0 +1,16 @@
+[Unit]
+Description=Goat AI Agent (REPL / service)
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/goat-ai-agent
+Environment=PYTHONPATH=/opt/goat-ai-agent/src
+Environment=GOAT_PROVIDER=auto
+ExecStart=/usr/bin/python3 -m agent.cli --repl
+Restart=on-failure
+User=unified
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
