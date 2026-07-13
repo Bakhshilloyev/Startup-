@@ -1,0 +1,3 @@
+# Termux / Android — keep it tiny. Core is stdlib-only.
+# pyyaml is optional; a built-in YAML parser is used as fallback.
+pyyaml>=6.0

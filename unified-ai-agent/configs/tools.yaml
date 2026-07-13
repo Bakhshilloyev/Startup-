@@ -1,0 +1,20 @@
+tools:
+  file_tools: true
+  shell_tools: true
+  web_tools: true
+  api_tools: false
+  memory_tools: true
+
+shell:
+  timeout: 60
+  allow: true
+
+web:
+  timeout: 30
+  max_chars: 8000
+
+api:
+  timeout: 30
+
+memory:
+  db_path: data/memory/agent.db

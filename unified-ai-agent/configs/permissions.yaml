@@ -1,0 +1,12 @@
+permissions:
+  allow_shell: true
+  allow_write: true
+  allow_network: false
+  require_confirmation: false
+  blocked_commands:
+    - rm -rf /
+    - mkfs
+    - shutdown
+    - :(){ :
+    - dd if=/dev/zero
+    - format c:

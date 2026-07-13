@@ -1,0 +1,27 @@
+providers:
+  openai:
+    default_model: gpt-4o-mini
+    base_url: https://api.openai.com/v1
+    api_key: ""
+  anthropic:
+    default_model: claude-3-5-haiku-latest
+    base_url: https://api.anthropic.com/v1
+    api_key: ""
+  gemini:
+    default_model: gemini-1.5-flash
+    base_url: https://generativelanguage.googleapis.com/v1beta
+    api_key: ""
+  groq:
+    default_model: llama-3.1-8b-instant
+    base_url: https://api.groq.com/openai/v1
+    api_key: ""
+  local:
+    default_model: qwen2.5-coder:7b
+    base_url: http://localhost:11434/v1
+    api_key: ""
+
+weak_device_models:
+  local: qwen2.5-coder:1.5b
+  openai: gpt-4o-mini
+  groq: llama-3.1-8b-instant
+  anthropic: claude-3-5-haiku-latest
